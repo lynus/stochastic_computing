@@ -17,9 +17,11 @@ double bconv(struct probnum *s,int range); //backward converter
 void add(struct probnum *a1,struct probnum *a2,struct probnum *s);
 void mul(struct probnum *a1,struct probnum *a2,struct probnum *p);
 void sub(struct probnum *a1,struct probnum *a2,struct probnum *p);
-void not(struct probnum *a1,struct probnum *n);
 
 int init_fc(char *fname,int bit,int len);	//init fconverter struct
 
 double _onesratio(struct probnum *s);	//calculate one's ratio in given probnum
 void seq_free(struct probnum *a);
+
+void new_probnum(struct probnum *s);
+

@@ -11,6 +11,9 @@ int main(int argc,char **argv)
 	struct probnum a1;
 	struct probnum a2;
 	struct probnum p;
+	new_probnum(&p);
+	new_probnum(&a1);
+	new_probnum(&a2);
 	//fconv(0.354,&a1);
 	//printf("a1 ones's ratio:%lf\n",_onesratio(&a1));
 	srandom(23);

@@ -6,6 +6,12 @@
 #include "SC.h"
 
 struct fconverter fc;
+static void _seq_not(struct probnum *a1,struct probnum *n);
+static void _seq_direct_add(struct probnum *,struct probnum *,struct probnum *);
+static void _seq_half_scale_add(struct probnum *a1,struct probnum *a2,
+		struct probnum *s);
+static void _seq_and(struct probnum *a1,struct probnum *a2,struct probnum *s);
+
 static void cb1(void *n,size_t len,void *data)
 {
 	double *p=fc.gold[fc.count];
@@ -87,22 +93,99 @@ double _onesratio(struct probnum *s)
 }
 void mul(struct probnum *a1,struct probnum *a2,struct probnum *p)
 {
-	int i;
+	struct probnum t1,t2,t3,t4;
 	assert(a1->len==a2->len);
-	p->seq=malloc(sizeof(int)*a1->len);
-	for (i=0;i<a1->len;i++)
-			p->seq[i]=(a1->seq[i])&(a2->seq[i]);
+	new_probnum(&t1);
+	new_probnum(&t2);
+	new_probnum(&t3);
+	new_probnum(&t4);
+	
+	_seq_not(a1,&t1);
+	_seq_not(a2,&t2);
+	_seq_and(&t1,&t2,&t3);
+	_seq_and(a1,a2,&t4);
+	_seq_direct_add(&t3,&t4,p);
 	p->len=a1->len;
 	p->num=a1->num*a2->num;
+	seq_free(&t1);
+	seq_free(&t2);
+	seq_free(&t3);
+	seq_free(&t4);
+
 }
 
 void add(struct probnum *a1,struct probnum *a2,struct probnum *s)
 {
-	register int count=0;
-	int i;
 	assert(a1->len==a2->len);
-	s->seq=malloc(sizeof(int)*a1->len);
-	for (i=0;i<a1->len;i++){
+	_seq_half_scale_add(a1,a2,s);
+}	
+
+void sub(struct probnum *a1,struct probnum *a2,struct probnum *s)
+{
+	assert(a1->len==a2->len);
+	struct probnum t1;
+	new_probnum(&t1);
+	_seq_not(a2,&t1);
+	_seq_half_scale_add(a1,&t1,s);
+	seq_free(&t1);
+}
+
+void _seq_not(struct probnum *a1,struct probnum *n)
+{
+	if (n->seq!=NULL)
+		seq_free(n);
+	n->len=a1->len;
+	n->seq=malloc(sizeof(int)*(n->len));
+	n->num=0-a1->num;
+	for(int i=0;i<n->len;i++)
+		n->seq[i]=(a1->seq[i]==0);  //flip a1's every bits
+}
+
+static void _seq_and(struct probnum *a1,struct probnum *a2,struct probnum *s)
+{
+	if (s->seq!=NULL)
+		seq_free(s);
+	s->len=a1->len;
+	s->seq=malloc(sizeof(int)*(a1->len));
+	for(int i=0;i<a1->len;i++)
+		s->seq[i]=(a1->seq[i])&(a2->seq[i]);
+	
+
+}
+
+
+static void _seq_direct_add(struct probnum *a1,struct probnum *a2,struct probnum *s)
+{
+	int count=0;
+	int i;
+	if (s->seq!=NULL)
+		seq_free(s);
+	s->seq=malloc(sizeof(int)*(a1->len));
+	s->len=a1->len;
+	for(i=0;i<s->len;i++){
+		if (a1->seq[i]==0 && a2->seq[i]==0){
+			if (count){
+				s->seq[i]=1;
+				count--;
+			}else
+				s->seq[i]=0;
+		}
+		else if (a1->seq[i]==1 && a2->seq[i]==1){
+			count++;
+			s->seq[i]=1;
+		}else 
+			s->seq[i]=1;
+	}	
+}
+static void _seq_half_scale_add(struct probnum *a1,struct probnum *a2,
+		struct probnum *s)
+{
+	register int count=0;
+	if (s->seq!=NULL)
+		seq_free(s);
+	s->seq=malloc(sizeof(int)*(a1->len));
+	s->len=a1->len;
+	for (int i=0;i<a1->len;i++){
 		if(a1->seq[i]==a2->seq[i])
 			s->seq[i]=a1->seq[i];
 		else{
@@ -110,20 +193,17 @@ void add(struct probnum *a1,struct probnum *a2,struct probnum *s)
 			count=(count+1)%2;
 		}
 	}
-	s->len=a1->len;
-	s->num=(a1->num+a2->num)/2;	// pz=(px+py)/2
-}
 
-void sub(struct probnum *a1,struct probnum *a2,struct probnum *s)
+}
+void seq_free(struct probnum *s)
 {
-	int i;
-	assert(a1->len==a2->len);
-	for(i=0;i<a1->len;i++)
-		a2->seq[i]=(a2->seq[i]==0); // a2= -a2
-	a2->num=0-a2->num;
-	add(a1,a2,s);
-	for(i=0;i<a1->len;i++)
-		a2->seq[i]=(a2->seq[i]==0);
-	a2->num=0-a2->num;
+	s->len=0;
+	s->num=0;
+	free(s->seq);
 }
-
+void new_probnum(struct probnum *s)
+{
+	s->len=0;
+	s->seq=NULL;
+	s->num=0.0;
+}
