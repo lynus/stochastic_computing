@@ -11,7 +11,7 @@ static void _seq_direct_add(struct probnum *,struct probnum *,struct probnum *);
 static void _seq_half_scale_add(struct probnum *a1,struct probnum *a2,
 		struct probnum *s);
 static void _seq_and(struct probnum *a1,struct probnum *a2,struct probnum *s);
-
+static void _seq_multi(struct probnum *a1,int t);
 static void cb1(void *n,size_t len,void *data)
 {
 	double *p=fc.gold[fc.count];
@@ -61,7 +61,7 @@ int init_fc(char *fname,int bit,int len)
 void fconv(double i,struct probnum *s,int range)
 {
 	int j;
-	i=i/(2*range)+0.5;
+	i=i/(4*range)+0.75;
 	s->num=i;
 	s->len=1<<fc.bit;
 	/*
@@ -80,7 +80,7 @@ void fconv(double i,struct probnum *s,int range)
 }
 double bconv(struct probnum *s,int range)
 {
-	return (double)2*range*(_onesratio(s)-0.5);
+	return (double)4*range*(_onesratio(s)-0.75);
 }
 
 double _onesratio(struct probnum *s)
@@ -103,6 +103,7 @@ void mul(struct probnum *a1,struct probnum *a2,struct probnum *p)
 	_seq_not(a1,&t1);
 	_seq_not(a2,&t2);
 	_seq_and(&t1,&t2,&t3);
+	_seq_multi(&t3,3);
 	_seq_and(a1,a2,&t4);
 	_seq_direct_add(&t3,&t4,p);
 	p->len=a1->len;
@@ -207,3 +208,25 @@ void new_probnum(struct probnum *s)
 	s->seq=NULL;
 	s->num=0.0;
 }
+static void _seq_multi(struct probnum *a1,int t)
+{
+	int count;
+	for (int i=0;i<a1->len;i++){
+		if (a1->seq[i]) count+=t-1;
+		else {
+			if(count){
+				count--;
+				a1->seq[i]=1;
+			}
+		}
+	}
+	i--;
+	while(count) {
+		if (a1->seq[i]==0){
+			a1->seq[i]=1;
+			count--;
+		}
+		i--;
+	}
+}
+
