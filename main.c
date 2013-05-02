@@ -20,7 +20,7 @@ int main(int argc,char **argv)
 	fp1=fopen("add_analysis","w");
 	fp2=fopen("sub_analysis","w");
 	fp3=fopen("mul_analysis","w");
-	fp4=fopen("reprent_analysis","w");
+	fp4=fopen("represent_analysis","w");
 	for (int i=0;i<1024;i++){
 		double k;
 		fconv(k=(double)random()/RAND_MAX,&a1,1);

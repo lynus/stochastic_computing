@@ -12,3 +12,4 @@ sort: add_analysis sub_analysis  mul_analysis
 	sort -t ',' -n -k 6 add_analysis -o add_analysis
 	sort -t ',' -n -k 6 mul_analysis -o mul_analysis
 	sort -t ',' -n -k 6 sub_analysis -o sub_analysis
+	sort -t ',' -n -k 4 represent_analysis -o represent_analysis
