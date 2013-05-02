@@ -210,8 +210,8 @@ void new_probnum(struct probnum *s)
 }
 static void _seq_multi(struct probnum *a1,int t)
 {
-	int count;
-	for (int i=0;i<a1->len;i++){
+	int count,i;
+	for (i=0;i<a1->len;i++){
 		if (a1->seq[i]) count+=t-1;
 		else {
 			if(count){

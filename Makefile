@@ -1,6 +1,6 @@
 CFLAG= -std=c99
 all: SC.o main.o libcsv.o SC.h csv.h
-	gcc -o sc SC.o libcsv.o main.o
+	gcc -o sc $(CFLAG) SC.o libcsv.o main.o
 
 .SUFFIXES: .o .c
 .c.o:
